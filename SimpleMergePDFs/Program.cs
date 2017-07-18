@@ -12,6 +12,8 @@ using iText.Kernel.Pdf;
 using iText.Kernel.Pdf.Navigation;
 using iText.Kernel.Utils;
 using NLog;
+using NLog.Config;
+using NLog.Targets;
 using SimpleMergePDFs.iTextLoggers;
 
 namespace SimpleMergePDFs
@@ -63,7 +65,8 @@ namespace SimpleMergePDFs
 
         private static void Setup(string[] args)
         {
-            _logger = LogManager.GetCurrentClassLogger();
+            SetupLogging();
+            
             var assemblyVersion = Assembly.GetExecutingAssembly().GetName().Version;
             _options = new Options(assemblyVersion);
             CommandLine.Parser.Default.ParseArguments(args, _options);
@@ -76,6 +79,19 @@ namespace SimpleMergePDFs
                 LoggerFactory.BindFactory(new DefaultLoggerFactory());
             }
           
+        }
+
+        private static void SetupLogging()
+        {
+            var config = new LoggingConfiguration();
+            var consoleTarget = new ColoredConsoleTarget();
+            consoleTarget.UseDefaultRowHighlightingRules = true;
+            config.AddTarget("console", consoleTarget);
+            consoleTarget.Layout = @"${level:uppercase=true}|${message}";
+            var rule1 = new LoggingRule("*", LogLevel.Trace, consoleTarget);
+            config.LoggingRules.Add(rule1);
+            LogManager.Configuration = config;
+            _logger = LogManager.GetCurrentClassLogger();
         }
 
 
